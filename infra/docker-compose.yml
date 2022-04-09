@@ -1,0 +1,54 @@
+version: '3.4'
+
+services:
+  api:
+    image: ${DOCKER_REGISTRY-}asyncarchapi
+    container_name: api
+    build:
+      context: ../
+      dockerfile: src/AsyncArch.API/Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on: 
+      - broker
+      - database
+      - cache
+
+  worker:
+    image: ${DOCKER_REGISTRY-}asyncarchworker
+    container_name: worker
+    build:
+      context: ../
+      dockerfile: src/AsyncArch.Worker/Dockerfile
+    depends_on:
+      - broker
+      - database
+      - cache
+  
+  broker:
+    image: rabbitmq:3.8-management-alpine
+    container_name: broker
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user@
+      - RABBITMQ_DEFAULT_PASS=pass@
+      - RABBITMQ_DEFAULT_VHOST=todos
+  
+  database:
+    image: postgres
+    container_name: database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: X@bLVUv7bKH=xy
+    ports:
+      - "5432:5432"
+  
+  cache:
+    image: redis
+    container_name: cache
+    ports:
+      - "6379:6379"
